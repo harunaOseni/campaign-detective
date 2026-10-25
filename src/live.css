@@ -1,0 +1,158 @@
+.live-app .live-error {
+  padding: 12px 24px;
+  background: #fff3f0;
+  color: #91372a;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.live-app .live-stage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  margin: 20px 0;
+  color: #4d625c;
+}
+.live-stage button {
+  margin-left: auto;
+  border: 1px solid #d9dfdc;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+.live-trace {
+  border: 1px solid #e4e7e5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 15px 0 28px;
+  font-size: 12px;
+}
+.live-trace summary {
+  cursor: pointer;
+  color: #67746e;
+}
+.live-trace > div {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 13px 0;
+}
+.live-trace small {
+  display: block;
+  color: #77817b;
+  margin-top: 3px;
+}
+.live-trace time {
+  margin-left: auto;
+  color: #949b96;
+  white-space: nowrap;
+}
+.live-app .answer-section p {
+  white-space: pre-wrap;
+}
+.live-citations {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.live-citations a {
+  font-size: 11px;
+  color: #53645c;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 4px 8px;
+  background: #f2f4f3;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.live-evidence {
+  margin-top: 30px;
+}
+.live-evidence > p {
+  font-size: 12px;
+  color: #7b847f;
+}
+.live-evidence > details {
+  border-top: 1px solid #e2e7e4;
+  padding: 14px 0;
+  scroll-margin-top: 90px;
+}
+.live-evidence summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.live-evidence summary span {
+  margin-left: auto;
+  color: #8a948e;
+  font-size: 11px;
+}
+.live-evidence pre {
+  white-space: pre-wrap;
+  background: #f5f6f5;
+  font: 11px/1.7 monospace;
+  padding: 14px;
+  border-radius: 6px;
+}
+.live-app .table-scroll {
+  overflow: auto;
+}
+.live-app li {
+  line-height: 1.8;
+  font-size: 13px;
+}
+.live-app .design-link {
+  font-size: 11px;
+  color: #7c8880;
+  padding: 12px;
+  display: block;
+}
+.live-app .history .chat-item span {
+  overflow: hidden;
+}
+.live-app .history .chat-item {
+  height: auto;
+  min-height: 60px;
+}
+.live-app .page h2 {
+  font-size: 17px;
+  margin-top: 32px;
+}
+.live-app .page table td:first-child {
+  display: table-cell;
+}
+.live-app .conversation-body > h1 {
+  font-size: 24px;
+}
+.live-app .next-step ul,
+.live-app .finding ul {
+  padding-left: 18px;
+}
+.live-app .composer select {
+  max-width: 260px;
+}
+.live-app .metrics {
+  margin: 25px 0;
+}
+.live-app .answer-footer {
+  flex-wrap: wrap;
+}
+.live-app main {
+  min-width: 0;
+}
+.live-app .header-context {
+  white-space: nowrap;
+}
+.live-app .history {
+  overflow-y: auto;
+}
+.live-app .history > * {
+  flex-shrink: 0;
+}
+.live-app .history .chat-item {
+  flex-shrink: 0;
+}

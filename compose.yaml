@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports: ['127.0.0.1:55436:5432']
+    environment:
+      POSTGRES_USER: detective
+      POSTGRES_PASSWORD: local_detective_only
+      POSTGRES_DB: detective
+    volumes: ['detective-data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U detective']
+      interval: 2s
+      timeout: 2s
+      retries: 20
+volumes:
+  detective-data:
