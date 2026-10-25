@@ -156,3 +156,113 @@
 .live-app .history .chat-item {
   flex-shrink: 0;
 }
+
+/* Separate answer summaries and evidence statements for easier scanning. */
+.live-app .answer-overview {
+  margin: 24px 0 32px;
+  padding: 20px 24px;
+  background: #f7f8fa;
+  border: 1px solid #e7e9ec;
+  border-radius: 8px;
+}
+.live-app .answer-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #69717d;
+  margin-bottom: 12px;
+}
+.live-app .answer-overview p {
+  font-size: 15px;
+  line-height: 1.75;
+  margin: 10px 0;
+  max-width: 72ch;
+}
+.live-app .answer-section {
+  margin: 28px 0;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e7e9ec;
+}
+.live-app .answer-section h2 {
+  font-size: 17px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.live-app .readable-findings {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  max-width: 76ch;
+}
+.live-app .readable-findings li {
+  padding-left: 6px;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.live-app .finding-measurements {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+.live-app .finding-measurements th,
+.live-app .finding-measurements td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e7e9ec;
+}
+.live-app .finding-measurements th {
+  color: #69717d;
+  font-weight: 500;
+  background: #f7f8fa;
+}
+.live-app .finding-measurements td:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.live-app .comparison-group {
+  margin-top: 24px;
+}
+.live-app .comparison-group h3 {
+  text-transform: capitalize;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.live-app .comparison-takeaway {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.live-app .comparison-percent {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #69717d;
+  margin-top: 4px;
+}
+
+.live-app .run-details {
+  margin-top: 16px;
+  color: #69717d;
+  font-size: 12px;
+}
+.live-app .run-details summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.live-app .run-details dl {
+  margin: 8px 0;
+  max-width: 320px;
+}
+.live-app .run-details dl div {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+}
+.live-app .run-details dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: #303640;
+}

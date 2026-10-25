@@ -18,7 +18,7 @@ if (!rows[0].n) {
     `INSERT INTO warehouse.inventory SELECT d,c,'2026-10-12'::date+n, CASE WHEN d='inventory' AND c='Alpine Jacket' AND n>=7 THEN 0 ELSE 100 END FROM unnest(ARRAY['inventory','delay','duplicates']) d CROSS JOIN unnest(ARRAY['Alpine Jacket','Everyday Shoes','Trail Socks']) c CROSS JOIN generate_series(0,13) n ON CONFLICT DO NOTHING`,
   );
   await db.query(
-    `INSERT INTO warehouse.metadata VALUES('seed_version','1'),('rows','1000000') ON CONFLICT DO NOTHING`,
+    `INSERT INTO warehouse.metadata VALUES('seed_version','2'),('rows','1000000') ON CONFLICT DO NOTHING`,
   );
   await db.query(
     `UPDATE warehouse.orders d SET order_id=o.id,day=o.day,campaign=o.campaign,segment=o.segment,net_revenue=o.net_revenue,reported_at=o.reported_at FROM warehouse.orders o WHERE d.dataset='duplicates' AND d.id%8=0 AND o.id=d.id-3`,

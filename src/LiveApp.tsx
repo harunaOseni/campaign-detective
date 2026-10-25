@@ -275,7 +275,7 @@ export default function LiveApp() {
         </nav>
         <div className="sidebar-bottom">
           <a className="design-link" href="/system-design">
-            System design ↗
+            System design
           </a>
           <div className="profile">
             <span className="avatar user">H</span>
@@ -459,26 +459,218 @@ export default function LiveApp() {
                   {result ? (
                     <>
                       <h1>{result.headline}</h1>
-                      <p className="lead">{result.summary}</p>
+                      <div className="answer-overview">
+                        <span className="answer-eyebrow">At a glance</span>
+                        {result.summary
+                          .split(/(?<=[.!?])\s+(?=[A-Z])/)
+                          .map((line: string, i: number) => (
+                            <p key={i}>{line}</p>
+                          ))}
+                      </div>
                       {result.partialReason && (
                         <p className="muted">
                           <strong>Why this answer is partial:</strong> {result.partialReason}
                         </p>
                       )}
-                      {result.findings?.map((f: any, i: number) => (
-                        <section className="answer-section" key={i}>
-                          <h2>{f.title}</h2>
-                          <p>{f.explanation}</p>
-                          <div className="live-citations">
-                            {f.evidenceIds?.map((id: string) => (
-                              <a href={'#evidence-' + id} key={id}>
-                                <Database size={12} />
-                                {id}
-                              </a>
-                            ))}
-                          </div>
-                        </section>
-                      ))}
+                      {result.findings?.length > 0 &&
+                        (() => {
+                          const sources = [
+                            ...new Set<string>(
+                              result.findings.flatMap((f: any) => f.evidenceIds || []),
+                            ),
+                          ];
+                          const measurements = [
+                            ...new Map<string, any>(
+                              result.findings.flatMap((f: any) =>
+                                (f.measurements || []).map((m: any) => [
+                                  JSON.stringify([m.evidenceId, m.rowIndex, m.field]),
+                                  m,
+                                ]),
+                              ),
+                            ).values(),
+                          ];
+                          const notes = [
+                            ...new Set<string>(
+                              result.findings
+                                .filter((f: any) => !f.measurements?.length)
+                                .flatMap((f: any) => f.explanation.split(/(?<=[.!?])\s+(?=[A-Z])/)),
+                            ),
+                          ];
+                          const comparisons = new Map<string, any>();
+                          for (const m of measurements) {
+                            const source = evidence.find((e: any) => e.id === m.evidenceId);
+                            const row = source?.rows?.[m.rowIndex];
+                            if (!row || !['previous', 'current'].includes(row.period)) continue;
+                            const label = row.campaign || row.segment || 'All selected records';
+                            const key = JSON.stringify([m.evidenceId, label, m.field]);
+                            const item = comparisons.get(key) || { key, label, field: m.field };
+                            item[row.period] = m.value;
+                            comparisons.set(key, item);
+                          }
+                          const groups = new Map<string, any[]>();
+                          for (const item of comparisons.values()) {
+                            groups.set(item.field, [...(groups.get(item.field) || []), item]);
+                          }
+                          const standalone = measurements.filter((m: any) => {
+                            const row = evidence.find((e: any) => e.id === m.evidenceId)?.rows?.[
+                              m.rowIndex
+                            ];
+                            return !row || !['previous', 'current'].includes(row.period);
+                          });
+                          const duplicateCount = standalone.find(
+                            (m: any) => m.evidenceId === 'quality' && m.field === 'duplicate_rows',
+                          )?.value;
+                          const rawRevenue = standalone.find(
+                            (m: any) => m.evidenceId === 'quality' && m.field === 'raw_revenue',
+                          )?.value;
+                          const cleanRevenue = standalone.find(
+                            (m: any) =>
+                              m.evidenceId === 'quality' && m.field === 'deduplicated_revenue',
+                          )?.value;
+                          const hasRevenueComparison =
+                            Number.isFinite(rawRevenue) && Number.isFinite(cleanRevenue);
+                          const metricLabels: Record<string, string> = {
+                            duplicate_rows: 'Duplicate records',
+                            event_rows: 'Total recorded events',
+                            unique_orders: 'Unique purchases',
+                            raw_revenue: 'Revenue before removing duplicates',
+                            deduplicated_revenue: 'Revenue after removing duplicates',
+                            duplicate_revenue: 'Revenue counted more than once',
+                          };
+                          const revenue = groups.get('revenue') || [];
+                          const comparable = revenue.filter(
+                            (r) => typeof r.previous === 'number' && typeof r.current === 'number',
+                          );
+                          const declined = comparable
+                            .filter((r) => r.current < r.previous)
+                            .map((r) => r.label);
+                          const others = comparable
+                            .filter((r) => r.current >= r.previous)
+                            .map((r) => r.label);
+                          const takeaway = comparable.length
+                            ? (declined.length
+                                ? `Revenue fell for ${declined.join(', ')}.`
+                                : 'Revenue did not fall for the products compared.') +
+                              (declined.length && others.length
+                                ? ` ${others.join(', ')} had stable or higher revenue.`
+                                : '')
+                            : '';
+                          return (
+                            <section className="answer-section">
+                              <h2>What changed</h2>
+                              {takeaway && <p className="comparison-takeaway">{takeaway}</p>}
+                              {[...groups].map(([field, rows]) => (
+                                <div key={field} className="comparison-group">
+                                  <h3>{field.replaceAll('_', ' ')}</h3>
+                                  <div className="table-scroll">
+                                    <table className="finding-measurements">
+                                      <thead>
+                                        <tr>
+                                          <th>Product / scope</th>
+                                          <th>Previous period</th>
+                                          <th>Current period</th>
+                                          <th>Change</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {rows.map((r) => {
+                                          const valid =
+                                            typeof r.previous === 'number' &&
+                                            typeof r.current === 'number';
+                                          const delta = valid ? r.current - r.previous : null;
+                                          return (
+                                            <tr key={r.key}>
+                                              <td>{r.label}</td>
+                                              <td>{nf(r.previous)}</td>
+                                              <td>{nf(r.current)}</td>
+                                              <td>
+                                                {delta === null
+                                                  ? 'Not available'
+                                                  : delta === 0
+                                                    ? 'No change'
+                                                    : `${delta > 0 ? '+' : '−'}${nf(Math.abs(delta))}`}
+                                                {delta !== null &&
+                                                  delta !== 0 &&
+                                                  r.previous > 0 && (
+                                                    <small className="comparison-percent">
+                                                      {Math.abs((delta / r.previous) * 100) < 0.01
+                                                        ? delta < 0
+                                                          ? '<0.01% decrease'
+                                                          : '<0.01% increase'
+                                                        : `${nf((delta / r.previous) * 100)}%`}
+                                                    </small>
+                                                  )}
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              ))}
+                              {standalone.length > 0 && (
+                                <div className="comparison-group">
+                                  {typeof duplicateCount === 'number' && (
+                                    <p className="comparison-takeaway">
+                                      {duplicateCount > 0
+                                        ? `${nf(duplicateCount)} extra records repeat purchases already recorded.`
+                                        : 'No duplicate purchase records were found.'}
+                                      {hasRevenueComparison &&
+                                        ` Counting each purchase once reduces reported revenue by ${nf(rawRevenue - cleanRevenue)}.`}
+                                    </p>
+                                  )}
+                                  <table className="finding-measurements">
+                                    <thead>
+                                      <tr>
+                                        <th>Measurement</th>
+                                        <th>Value</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {standalone.map((m: any) => (
+                                        <tr
+                                          key={JSON.stringify([m.evidenceId, m.rowIndex, m.field])}
+                                        >
+                                          <td>
+                                            {metricLabels[m.field] || m.field.replaceAll('_', ' ')}
+                                          </td>
+                                          <td>{nf(m.value)}</td>
+                                        </tr>
+                                      ))}
+                                      {hasRevenueComparison &&
+                                        !standalone.some(
+                                          (m: any) =>
+                                            m.evidenceId === 'quality' &&
+                                            m.field === 'duplicate_revenue',
+                                        ) && (
+                                          <tr>
+                                            <td>Revenue counted more than once</td>
+                                            <td>{nf(rawRevenue - cleanRevenue)}</td>
+                                          </tr>
+                                        )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                              {notes.length > 0 && (
+                                <ul className="readable-findings">
+                                  {notes.map((line, i) => (
+                                    <li key={i}>{line}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              <div className="live-citations">
+                                {sources.map((id) => (
+                                  <a href={'#evidence-' + id} key={id}>
+                                    <Database size={12} />
+                                    {id}
+                                  </a>
+                                ))}
+                              </div>
+                            </section>
+                          );
+                        })()}
                       {result.uncertainties?.length > 0 && (
                         <section className="finding">
                           <ShieldCheck size={20} />
@@ -587,11 +779,24 @@ export default function LiveApp() {
                     >
                       <ThumbsDown size={14} />
                     </button>
-                    <span>
-                      {job.model_calls} model calls · {job.query_count} queries ·{' '}
-                      {nf(Number(job.input_tokens) + Number(job.output_tokens))} tokens
-                    </span>
                   </div>
+                  <details className="run-details">
+                    <summary>Run details</summary>
+                    <dl>
+                      <div>
+                        <dt>Model calls</dt>
+                        <dd>{job.model_calls}</dd>
+                      </div>
+                      <div>
+                        <dt>Database queries</dt>
+                        <dd>{job.query_count}</dd>
+                      </div>
+                      <div>
+                        <dt>Total tokens</dt>
+                        <dd>{nf(Number(job.input_tokens) + Number(job.output_tokens))}</dd>
+                      </div>
+                    </dl>
+                  </details>
                 </>
               )}
             </div>
