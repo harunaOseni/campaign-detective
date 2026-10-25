@@ -18,7 +18,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Copy,
-  FlaskConical,
   ShieldCheck,
 } from 'lucide-react';
 import './live.css';
@@ -71,8 +70,7 @@ export default function LiveApp() {
     [metrics, setMetrics] = useState<any>(null),
     [drawer, setDrawer] = useState(false),
     [collapsed, setCollapsed] = useState(false),
-    [historyCollapsed, setHistoryCollapsed] = useState(false),
-    [benchmarking, setBenchmarking] = useState(false);
+    [historyCollapsed, setHistoryCollapsed] = useState(false);
   const refresh = useCallback(async () => {
     try {
       const data = await api('/investigations');
@@ -868,7 +866,6 @@ export default function LiveApp() {
                     <li key={q.id}>{q.label}</li>
                   ))}
                 </ul>
-                <p className="muted">{context.scope}</p>
               </>
             ) : (
               <p>Loading connected sources…</p>
@@ -878,247 +875,114 @@ export default function LiveApp() {
         {page === 'scale' && (
           <div className="page">
             <h1>Performance lab</h1>
-            <p className="lead">
-              Measured results from this local deployment. Warehouse load tests are separate from
-              full AI investigations.
-            </p>
+            <p className="lead">Latest measured AI investigation load test from the local demo.</p>
             {metrics && (
               <>
-                <div className="metrics">
-                  {[
-                    ['Completed', metrics.completed + ' / ' + metrics.total],
-                    [
-                      'p95 end-to-end',
-                      metrics.p95_seconds ? Math.round(metrics.p95_seconds) + ' s' : 'Not measured',
-                    ],
-                    ['Queue / Running', metrics.queued + ' / ' + metrics.running],
-                  ].map(([label, value]) => (
-                    <div className="metric" key={label}>
-                      <span>{label}</span>
-                      <strong>{value}</strong>
-                    </div>
-                  ))}
-                </div>
-                <p>
-                  {nf(metrics.input_tokens)} input tokens · {nf(metrics.output_tokens)} output
-                  tokens · {metrics.model_calls} model requests
-                </p>
-                <p className="muted">{metrics.costNote}</p>
-                <div className="lab-notice">
-                  <FlaskConical size={20} />
-                  <div>
-                    <strong>Warehouse load test</strong>
-                    <p>
-                      30 queries with 10 concurrent clients over the seeded warehouse. No paid model
-                      calls.
-                    </p>
-                    <button
-                      className="outline"
-                      disabled={benchmarking}
-                      onClick={async () => {
-                        setBenchmarking(true);
-                        try {
-                          await api('/benchmarks', { method: 'POST' });
-                          setMetrics(await api('/metrics'));
-                        } catch (e: any) {
-                          setError(e.message);
-                        } finally {
-                          setBenchmarking(false);
-                        }
-                      }}
-                    >
-                      {benchmarking ? 'Running measured benchmark…' : 'Run warehouse benchmark'}
-                    </button>
-                  </div>
-                </div>
-                {metrics.benchmarks.map((b: any, i: number) => (
-                  <section className="answer-section" key={i}>
-                    <h3>{b.result.kind}</h3>
-                    <p>{b.result.scope}</p>
-                    {b.result.manualReviewNotes && (
-                      <div className="finding">
+                {metrics.benchmarks
+                  .filter((b: any) => b.result.jobs)
+                  .slice(0, 1)
+                  .map((b: any, i: number) => (
+                    <section className="answer-section" key={i}>
+                      <h2>{nf(b.result.jobs)} investigations, submitted together</h2>
+                      <p className="lab-description">
+                        Real AI calls and database queries against our synthetic warehouse. Active
+                        investigations may wait for a model or database connection.
+                      </p>
+                      <div className="lab-highlights">
                         <div>
-                          <h3>Manual review found additional issues</h3>
-                          <ul>
-                            {b.result.manualReviewNotes.map((note: string, n: number) => (
-                              <li key={n}>{note}</li>
-                            ))}
-                          </ul>
+                          <span>Total test time</span>
+                          <strong>{nf(b.result.elapsedMs / 1000)} seconds</strong>
+                        </div>
+                        <div>
+                          <span>Complete answers</span>
+                          <strong>{nf(b.result.completed)}</strong>
+                        </div>
+                        <div>
+                          <span>Partial answers</span>
+                          <strong>{nf(b.result.incomplete)}</strong>
+                        </div>
+                        <div>
+                          <span>Execution failures</span>
+                          <strong>{nf(b.result.errors)}</strong>
                         </div>
                       </div>
-                    )}
-                    {b.result.qualityCases ? (
-                      <>
-                        <p>
-                          <strong>
-                            {b.result.passed} / {b.result.total} scoped checks passed
-                          </strong>
-                        </p>
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>Question variant</th>
-                              <th>Run</th>
-                              <th>Expected</th>
-                              <th>Actual</th>
-                              <th>Check</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {b.result.qualityCases.map((r: any) => (
-                              <tr key={r.id}>
-                                <td>
-                                  <a
-                                    href={'/?job=' + r.id}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      open(r.id);
-                                    }}
-                                  >
-                                    {r.case}
-                                  </a>
-                                </td>
-                                <td>{r.repeat}</td>
-                                <td>{r.expected}</td>
-                                <td>{r.actual}</td>
-                                <td>{r.passed ? 'Passed' : 'Failed'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </>
-                    ) : b.result.runs ? (
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Clients</th>
-                            <th>Run</th>
-                            <th>Queries</th>
-                            <th>p95 incl. wait</th>
-                            <th>Queries / s</th>
-                            <th>Errors</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {b.result.runs.map((r: any) => (
-                            <tr key={r.clients + '-' + r.repeat}>
-                              <td>{r.clients}</td>
-                              <td>{r.repeat}</td>
-                              <td>{r.queries}</td>
-                              <td>{nf(r.p95Ms)} ms</td>
-                              <td>{r.throughput.toFixed(2)}</td>
-                              <td>{r.errors}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : b.result.results ? (
-                      <>
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>Workers</th>
-                              <th>Completed</th>
-                              <th>Duration</th>
-                              <th>Jobs / second</th>
-                              <th>p95 wait</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {b.result.results.map((r: any) => (
-                              <tr key={r.workers}>
-                                <td>{r.workers}</td>
-                                <td>
-                                  {r.completed} / {r.jobs}
-                                </td>
-                                <td>{nf(r.elapsedMs)} ms</td>
-                                <td>{r.throughputPerSecond.toFixed(2)}</td>
-                                <td>{nf(r.p95WaitMs)} ms</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        <p>
-                          <strong>{b.result.speedup.toFixed(2)}× throughput improvement</strong>{' '}
-                          with three workers in this controlled workload.
-                        </p>
-                        <p>
-                          Process crash recovery: {b.result.recovery.passed ? 'passed' : 'failed'} ·
-                          saved evidence resumed · stale writes rejected ·{' '}
-                          {nf(b.result.recovery.recoveryMs)} ms to recover.
-                        </p>
-                      </>
-                    ) : b.result.jobs ? (
-                      <table>
+                      <p className="lab-description">
+                        Partial answers indicate an incomplete answer, not necessarily a system
+                        failure.
+                      </p>
+                      <h3>Speed and capacity</h3>
+                      <p className="lab-description">
+                        The timings below cover 95% of requests. The slowest 5% took longer.
+                      </p>
+                      <table className="lab-results">
                         <tbody>
                           {[
-                            ['Submitted investigations', b.result.jobs],
                             [
-                              'Completed / partial',
-                              b.result.completed + ' / ' + b.result.incomplete,
+                              'Requests accepted within',
+                              `${nf(b.result.p95AcceptMs / 1000)} seconds`,
                             ],
+                            ['Queue wait within', `${nf(b.result.p95WaitMs / 1000)} seconds`],
                             [
-                              'Peak running / queued',
-                              b.result.peakRunning + ' / ' + b.result.peakQueued,
+                              'Investigations finished within',
+                              `${nf(b.result.p95EndToEndMs / 1000)} seconds`,
                             ],
-                            ['p95 request acceptance', nf(b.result.p95AcceptMs) + ' ms'],
-                            ['p95 queue wait', nf(b.result.p95WaitMs) + ' ms'],
-                            ['p95 full investigation', nf(b.result.p95EndToEndMs) + ' ms'],
-                            ['Model calls', b.result.modelCalls],
+                            ['Most investigations active at once', nf(b.result.peakRunning)],
+                            ['Most investigations waiting in the queue', nf(b.result.peakQueued)],
                             [
-                              'Simultaneous model-call limit',
-                              b.result.modelConcurrency ?? 'Not configured in this run',
+                              'AI calls allowed at once',
+                              b.result.modelConcurrency ?? 'Not recorded',
                             ],
-                            ['Answers with findings', b.result.usefulAnswers ?? 'Not measured'],
-                            [
-                              'Expected evidence checks passed',
-                              b.result.expectedChecksPassed ?? 'Not measured',
-                            ],
-                            [
-                              'Rejected numerical findings',
-                              b.result.rejectedFindings ?? 'Not recorded',
-                            ],
-                            ['Execution errors', b.result.errors],
-                            [
-                              'Delayed-data safeguard',
-                              b.result.delayedDataGatePassed ? 'Passed' : 'Failed',
-                            ],
-                          ].map(([k, v]) => (
-                            <tr key={k}>
-                              <td>{k}</td>
-                              <td>{v}</td>
+                            ['Total AI calls', nf(b.result.modelCalls)],
+                          ].map(([label, value]) => (
+                            <tr key={label}>
+                              <th scope="row">{label}</th>
+                              <td>{value}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                    ) : (
-                      <table>
+                      <h3>Answer checks</h3>
+                      <p className="lab-description">
+                        An answer containing findings is not automatically a correct or useful
+                        answer. Evidence checks and the missing-data safeguard are measured
+                        separately.
+                      </p>
+                      <table className="lab-results">
                         <tbody>
-                          <tr>
-                            <td>p95</td>
-                            <td>{nf(b.result.p95Ms)} ms</td>
-                          </tr>
-                          <tr>
-                            <td>Total duration</td>
-                            <td>{nf(b.result.elapsedMs)} ms</td>
-                          </tr>
-                          <tr>
-                            <td>Errors</td>
-                            <td>{b.result.errors}</td>
-                          </tr>
+                          {[
+                            [
+                              'Answers containing findings',
+                              b.result.usefulAnswers ?? 'Not measured',
+                            ],
+                            [
+                              'Passed the defined evidence checks',
+                              b.result.expectedChecksPassed == null
+                                ? 'Not measured'
+                                : `${b.result.expectedChecksPassed} of ${b.result.jobs}`,
+                            ],
+                            [
+                              'Reports withheld by the verifier',
+                              b.result.rejectedFindings ?? 'Not recorded',
+                            ],
+                            [
+                              'Delayed-data safeguard',
+                              b.result.delayedDataGatePassed == null
+                                ? 'Not measured'
+                                : b.result.delayedDataGatePassed
+                                  ? 'Passed'
+                                  : 'Failed',
+                            ],
+                          ].map(([label, value]) => (
+                            <tr key={label}>
+                              <th scope="row">{label}</th>
+                              <td>{value}</td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
-                    )}
-                    <small>{new Date(b.at).toLocaleString()}</small>
-                  </section>
-                ))}
-                <h2>Capacity boundaries</h2>
-                <p>
-                  API processes and configurable worker slots share one machine. This demonstrates
-                  distribution and bounded concurrency, not million-user capacity. Evaluation
-                  results are recorded by the test commands; answer accuracy is not inferred from
-                  completion rate.
-                </p>
+                      <small>{new Date(b.at).toLocaleString()}</small>
+                    </section>
+                  ))}
               </>
             )}
           </div>

@@ -266,3 +266,53 @@
   font-variant-numeric: tabular-nums;
   color: #303640;
 }
+
+.live-app .lab-description {
+  max-width: 70ch;
+  line-height: 1.7;
+  color: #626b75;
+  margin: 12px 0 24px;
+}
+.live-app .lab-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.live-app .lab-highlights > div {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.live-app .lab-highlights span {
+  display: block;
+  color: #69717d;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.live-app .lab-highlights strong {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.live-app .lab-results {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 32px;
+}
+.live-app .lab-results th,
+.live-app .lab-results td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e7e9ec;
+  text-align: left;
+}
+.live-app .lab-results th {
+  font-weight: 400;
+  color: #58616c;
+  width: 65%;
+}
+.live-app .lab-results td {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

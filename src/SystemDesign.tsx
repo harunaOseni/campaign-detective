@@ -6,7 +6,7 @@ export default function SystemDesign() {
         className="sd-diagram"
         viewBox="0 0 1680 1640"
         role="img"
-        aria-label="User sends a question to the Web App, which sends it through a Load Balancer distributing requests across three server instances which enqueue investigations in a Job Queue. A pool of workers picks up jobs, each running the Agent System containing a Planner assigning checks to ad performance, inventory, and customer behavior specialists, a shared read-only Query Runner, and a Verifier that checks findings against evidence and requests rechecks when needed, which queries the Data Warehouse and receives results, saves progress and results in an Investigation Store, which servers read to return answers to the Web App"
+        aria-label="User sends a question to the Web App, which sends it through a Load Balancer distributing requests across three server instances which enqueue investigations in a Job Queue. A pool of workers picks up jobs, each running the Agent System containing a Planner selecting checks for a read-only Query Runner that gathers warehouse evidence before passing it to ad performance, inventory, and customer behavior specialists, and a Verifier that checks findings against evidence and requests rechecks when needed, which queries the Data Warehouse and receives results, saves progress and results in an Investigation Store, which servers read to return answers to the Web App"
       >
         <defs>
           <marker
@@ -231,14 +231,14 @@ export default function SystemDesign() {
         <path
           className="sd-moving-arrow"
           pathLength="100"
-          d="M840 932 V990"
+          d="M840 932 V960 H975 V1030 H1010"
           fill="none"
           stroke="#526879"
           strokeWidth="2"
           markerEnd="url(#arrow)"
         />
-        <text className="sd-detail" x="856" y="962">
-          Assign checks
+        <text className="sd-detail" x="850" y="950">
+          Request data checks
         </text>
         <rect
           x="738"
@@ -268,21 +268,15 @@ export default function SystemDesign() {
         <path
           className="sd-moving-arrow"
           pathLength="100"
-          d="M942 1058 H1010"
-          fill="none"
-          stroke="#526879"
-          strokeWidth="2"
-          markerEnd="url(#arrow)"
-        />
-        <path
-          className="sd-moving-arrow"
-          pathLength="100"
-          d="M1010 1100 H942"
+          d="M1115 1124 V1192 H975 V1130 H942"
           fill="none"
           stroke="#468477"
           strokeWidth="2"
           markerEnd="url(#return-arrow)"
         />
+        <text className="sd-detail" x="1080" y="1215" textAnchor="middle">
+          Collected evidence
+        </text>
         <text className="sd-label" x="980" y="797" textAnchor="middle">
           Agent System
         </text>
@@ -632,12 +626,6 @@ export default function SystemDesign() {
 
         <text className="sd-detail" x="1300" y="365">
           Return definitions + rules
-        </text>
-        <text className="sd-detail" x="976" y="1038" textAnchor="middle" style={{ fontSize: 12 }}>
-          Run query
-        </text>
-        <text className="sd-detail" x="976" y="1125" textAnchor="middle" style={{ fontSize: 12 }}>
-          Return data
         </text>
         <text className="sd-detail" x="205" y="780" textAnchor="end">
           Return progress + answer
